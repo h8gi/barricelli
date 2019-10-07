@@ -9,46 +9,50 @@ import (
 )
 
 type World struct {
-	Cells []int
-	Width int
+	ThisGeneration []int
+	NextGeneration []int
+	Width          int
 }
 
 func NeweWorld(width int, density float64) *World {
-	cells := make([]int, width)
+	this := make([]int, width)
+	next := make([]int, width)
 
-	for i, _ := range cells {
+	for i, _ := range this {
 		if rand.Float64() < density {
-			cells[i] = rand.Intn(19) - 9
+			// [-9,9]
+			this[i] = rand.Intn(19) - 9
 		}
 	}
 
 	return &World{
-		Cells: cells,
-		Width: width,
+		ThisGeneration: this,
+		NextGeneration: next,
+		Width:          width,
 	}
 }
 
 func (w *World) Reproduce() {
 	var sc = bufio.NewScanner(os.Stdin)
-	newcells := make([]int, w.Width)
-	for i, old := range w.Cells {
-		for j := old; j != 0; {
+	for i, n := range w.ThisGeneration {
+		for j := n; j != 0; {
 			sc.Scan()
 			k := mod(i+j, w.Width)
-			fmt.Println("i,old,j,k:", i, old, j, k)
-			fmt.Println(w.Cells)
-			fmt.Println(newcells)
+			fmt.Println("i,n,j,k:", i, n, j, k)
+			fmt.Println("this:", w.ThisGeneration)
+			fmt.Println("next:", w.NextGeneration)
 
-			if newcells[k] > 0 {
+			if w.NextGeneration[k] > 0 {
 				// mutation
+				fmt.Println("mutation!")
 				break
 			} else {
-				newcells[k] = old
-				j = w.Cells[k]
+				w.NextGeneration[k] = n
+				j = w.ThisGeneration[k]
 			}
 		}
 	}
-	w.Cells = newcells
+	copy(w.ThisGeneration, w.NextGeneration)
 }
 
 func mod(d, m int) int {
@@ -60,15 +64,16 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	// world := NeweWorld(30, 0.2)
 	world := &World{
-		Width: 26,
-		Cells: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, -3, 1, -3, 0, -3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		Width:          26,
+		ThisGeneration: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, -3, 1, -3, 0, -3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		NextGeneration: make([]int, 26),
+		// ThisGeneration: []int{0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 0, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	}
 	for i := 0; i < 30000; i++ {
 		sc.Scan()
-		for _, v := range world.Cells {
+		for _, v := range world.ThisGeneration {
 			fmt.Printf("%3d", v)
 		}
-
 		world.Reproduce()
 	}
 }
