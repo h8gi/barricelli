@@ -33,6 +33,7 @@ func NeweWorld(width int, density float64) *World {
 }
 
 func (w *World) Reproduce() {
+
 	var sc = bufio.NewScanner(os.Stdin)
 	for i, n := range w.ThisGeneration {
 		for j := n; j != 0; {
@@ -53,6 +54,9 @@ func (w *World) Reproduce() {
 		}
 	}
 	copy(w.ThisGeneration, w.NextGeneration)
+	for i := range w.NextGeneration {
+		w.NextGeneration[i] = 0
+	}
 }
 
 func mod(d, m int) int {
